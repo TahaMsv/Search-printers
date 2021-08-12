@@ -108,6 +108,7 @@ class SearchPrintersController extends MainController {
         });
       }
     });
+
     connectedIPs.refresh();
   }
 
@@ -119,6 +120,67 @@ class SearchPrintersController extends MainController {
       }
     }
     textController.text = "";
+  }
+
+  void showLogDialog() {
+    String message = NetworkAnalyzer.getSortedLogMessage();
+    double screenHeight = Get.height;
+    double screenWidth = Get.width;
+    BuildContext? context = Get.context;
+    showDialog(
+        context: context!,
+        barrierDismissible: false,
+        //context: _scaffoldKey.currentContext,
+        builder: (context) {
+          return AlertDialog(
+            contentPadding: EdgeInsets.only(left: 15, right: 15),
+            title: Center(child: Text("Information")),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.all(Radius.circular(20.0))),
+            content: Container(
+              height: screenHeight * 0.8,
+              width: screenWidth ,
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    SizedBox(
+                      height: 20,
+                    ),
+                    Text(
+                      message,
+                      overflow: TextOverflow.clip,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            actions: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Container(
+                    width: screenWidth * 0.20,
+                    child: RaisedButton(
+                      child: new Text(
+                        'Ok',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                      color: Color(0xFF121A21),
+                      shape: new RoundedRectangleBorder(
+                        borderRadius: new BorderRadius.circular(30.0),
+                      ),
+                      onPressed: () {
+                        //saveIssue();
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ),
+                ],
+              )
+            ],
+          );
+        });
   }
 
   @override

@@ -20,10 +20,24 @@ class NetworkAddress {
 
 /// Pings a given subnet (xxx.xxx.xxx) on a given port using [discover] method.
 class NetworkAnalyzer {
-
   static String _logMessage = "";
+  static Map<int, String> _connectionStates = {};
 
-  String get logMessage => _logMessage;
+  static String get logMessage => _logMessage;
+
+  static String getSortedLogMessage() {
+    String sortedLogMessage = "";
+    String dividerLine = "------------------------------------------\n";
+    List sortedKeys = _connectionStates.keys.toList();
+    sortedKeys.sort((a, b) => a.compareTo(b));
+    sortedLogMessage += dividerLine;
+    for (int key in sortedKeys) {
+      sortedLogMessage += _connectionStates[key]!;
+      sortedLogMessage += dividerLine;
+    }
+
+    return sortedLogMessage;
+  }
 
   /// Pings a given [subnet] (xxx.xxx.xxx) on a given [port].
   ///
@@ -69,6 +83,9 @@ class NetworkAnalyzer {
     int port, {
     Duration timeout = const Duration(seconds: 5),
   }) {
+    _logMessage = "";
+    _connectionStates = {};
+
     if (port < 1 || port > 65535) {
       _logMessage += 'Incorrect port\n';
       print('Incorrect port');
@@ -94,16 +111,14 @@ class NetworkAnalyzer {
         if (e.osError == null || _errorCodes.contains(e.osError!.errorCode)) {
           out.sink.add(NetworkAddress(host, false));
           if (e.osError == null) {
-            _logMessage += '"host:$host ==>,Connection timed out"\n';
-            print("host:$host ==>,Connection timed out");
+            updateLogMessageAndMap(i, '"$host==>,Connection timed out"\n');
           } else {
-            _logMessage +=
-                '"host:$host ==>${_errorMessages[e.osError!.errorCode]}"\n';
-            print("host:$host ==>${_errorMessages[e.osError!.errorCode]}");
+            updateLogMessageAndMap(
+                i, '"$host==>${_errorMessages[e.osError!.errorCode]}"\n');
           }
         } else {
-          _logMessage += '"host:$host ==>,Too many open files in system"\n';
-          print("host:$host ==>,Too many open files in system");
+          updateLogMessageAndMap(
+              i, '"$host==>,Too many open files in system"\n');
           // Error 23,24: Too many open files in system
           throw e;
         }
@@ -121,6 +136,12 @@ class NetworkAnalyzer {
     return Socket.connect(host, port, timeout: timeout).then((socket) {
       return socket;
     });
+  }
+
+  static void updateLogMessageAndMap(int i, String message) {
+    _connectionStates.putIfAbsent(i, () => message);
+    _logMessage += message;
+    print(message);
   }
 
   // 13: Connection failed (OS Error: Permission denied)

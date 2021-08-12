@@ -48,9 +48,32 @@ class SearchPrintersView extends StatelessWidget {
                 mySearchPrintersController: mySearchPrintersController,
                 text: "Connect",
               ),
-              MyProgressButton(
-                mySearchPrintersController: mySearchPrintersController,
-                text: "Scan",
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Expanded(
+                    child: MyProgressButton(
+                      mySearchPrintersController: mySearchPrintersController,
+                      text: "Scan",
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 55,
+                      margin: EdgeInsets.only(left: 10,right: 10,bottom: 5),
+                      child: TextButton(
+                        style: ButtonStyle(
+                          backgroundColor: MaterialStateProperty.all<Color>(
+                              Colors.redAccent),
+                          foregroundColor:
+                              MaterialStateProperty.all<Color>(Colors.white),
+                        ),
+                        onPressed: mySearchPrintersController.showLogDialog,
+                        child: Text('Failed connections'),
+                      ),
+                    ),
+                  )
+                ],
               ),
               ConnectedIPsList(
                   mySearchPrintersController: mySearchPrintersController)
