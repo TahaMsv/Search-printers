@@ -9,6 +9,7 @@ import '../../global/MainModel.dart';
 import '../../widgets/ping_discover_network/ping_discover_network.dart';
 import 'package:wifi/wifi.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:connectivity/connectivity.dart';
 
 class SearchPrintersController extends MainController {
   SearchPrintersController._();
@@ -28,9 +29,9 @@ class SearchPrintersController extends MainController {
   Rx<ButtonState> isConnectToIP = ButtonState.idle.obs;
   RxList<Socket> connectedIPs = <Socket>[].obs;
 
-  String _getIPRange(String ip) {
-    String ipRange = ip.substring(0, ip.lastIndexOf(".") + 1);
-    return ipRange;
+  Future<String> _getSubnet(String ip) {
+    String subnet = ip.substring(0, ip.lastIndexOf("."));
+    return Future<String>.value(subnet);
   }
 
   Future<int> _getPort() {
@@ -44,72 +45,63 @@ class SearchPrintersController extends MainController {
     return Future<String>.value(ip);
   }
 
+  Future<bool> checkWifiConnection() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    return Future<bool>.value(connectivityResult == ConnectivityResult.wifi);
+  }
+
   void connectToIP() async {
+    bool isWifiConnected = await checkWifiConnection();
     isConnectToIP.value = ButtonState.loading;
-    isConnectToIP.refresh();
-    String ip = await _getIP();
-    int port = await _getPort();
-    String message = "";
-    print(ip);
-    print(port);
-    print("here");
-    await Socket.connect(ip, port).then((Socket sock) {
-      message = "connected";
-      isConnectToIP.value = ButtonState.success;
-    }).catchError((Object e) {
-      message = "Failed";
-      isConnectToIP.value = ButtonState.fail;
-      // print("Unable to connect: $e");
-    });
-    Fluttertoast.showToast(
-        msg: message,
-        toastLength: Toast.LENGTH_SHORT,
-        gravity: ToastGravity.CENTER,
-        timeInSecForIosWeb: 1,
-        backgroundColor: Colors.red,
-        textColor: Colors.white,
-        fontSize: 16.0);
+    if (isWifiConnected) {
+      String ip = await _getIP();
+      int port = await _getPort();
+      String message = "";
+      await Socket.connect(ip, port).then((Socket sock) {
+        message = "connected";
+        isConnectToIP.value = ButtonState.success;
+      }).catchError((Object e) {
+        message = "Failed";
+        isConnectToIP.value = ButtonState.fail;
+        // print("Unable to connect: $e");
+      });
+      showToast(message, Colors.blue, Colors.white);
+    } else {
+      showToast("Wifi connection failed", Colors.redAccent, Colors.white);
+      isConnectToIP.value = ButtonState.idle;
+    }
   }
 
   void searchIPs() async {
     isLoading.value = true;
-    isLoading.refresh();
-    await newMethod();
-    Timer(Duration(seconds: 6), () {
-      int numberOfFoundedDevice = connectedIPs.length;
-      Fluttertoast.showToast(
-          msg: "$numberOfFoundedDevice devices found",
-          toastLength: Toast.LENGTH_SHORT,
-          gravity: ToastGravity.CENTER,
-          timeInSecForIosWeb: 1,
-          backgroundColor: Colors.red,
-          textColor: Colors.white,
-          fontSize: 16.0);
-      isLoading.value = false;
-      isLoading.refresh();
-    });
-  }
-
-  Future<void> newMethod() async {
-    final String ip = await Wifi.ip;
-    final String subnet = ip.substring(0, ip.lastIndexOf('.'));
-    int port = await _getPort();
     connectedIPs.clear();
-    final stream = NetworkAnalyzer.discover2(subnet, port);
-    stream.listen((NetworkAddress addr) {
-      if (addr.exists) {
-        print('Found device: ${addr.ip}');
-        runZoned(() async {
-          await Socket.connect(addr.ip, port).then((Socket sock) {
-            connectedIPs.add(sock);
-          }).catchError((Object e) {
-            // print("Unable to connect: $e");
+    bool isWifiConnected = await checkWifiConnection();
+    if (isWifiConnected) {
+      final String ip = await Wifi.ip;
+      final String subnet = await _getSubnet(ip);
+      int port = await _getPort();
+      final stream = NetworkAnalyzer.discover2(subnet, port);
+      stream.listen((NetworkAddress addr) {
+        if (addr.exists) {
+          // print('Found device: ${addr.ip}');
+          runZoned(() async {
+            await Socket.connect(addr.ip, port).then((Socket sock) {
+              connectedIPs.add(sock);
+            }).catchError((Object e) {
+              // print("Unable to connect: $e");
+            });
           });
-        });
-      }
-    });
-
-    connectedIPs.refresh();
+        }
+      });
+      Timer(Duration(seconds: 6), () {
+        int numberOfFoundedDevice = connectedIPs.length;
+        showToast(
+            "$numberOfFoundedDevice devices found", Colors.blue, Colors.white);
+      });
+    } else {
+      showToast("Wifi connection failed", Colors.redAccent, Colors.white);
+    }
+    isLoading.value = false;
   }
 
   void sendMessage() {
@@ -120,6 +112,17 @@ class SearchPrintersController extends MainController {
       }
     }
     textController.text = "";
+  }
+
+  void showToast(String message, Color bgColor, textColor) {
+    Fluttertoast.showToast(
+        msg: message,
+        toastLength: Toast.LENGTH_SHORT,
+        gravity: ToastGravity.CENTER,
+        timeInSecForIosWeb: 1,
+        backgroundColor: bgColor,
+        textColor: textColor,
+        fontSize: 16.0);
   }
 
   void showLogDialog() {
@@ -139,7 +142,7 @@ class SearchPrintersController extends MainController {
                 borderRadius: BorderRadius.all(Radius.circular(20.0))),
             content: Container(
               height: screenHeight * 0.8,
-              width: screenWidth ,
+              width: screenWidth,
               child: SingleChildScrollView(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -185,7 +188,7 @@ class SearchPrintersController extends MainController {
 
   @override
   void onInit() {
-    print("Splash Init");
+    print("Search printer Init");
     super.onInit();
   }
 

@@ -141,7 +141,7 @@ class NetworkAnalyzer {
   static void updateLogMessageAndMap(int i, String message) {
     _connectionStates.putIfAbsent(i, () => message);
     _logMessage += message;
-    print(message);
+    // print(message);
   }
 
   // 13: Connection failed (OS Error: Permission denied)
