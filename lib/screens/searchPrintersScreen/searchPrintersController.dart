@@ -51,57 +51,67 @@ class SearchPrintersController extends MainController {
   }
 
   void connectToIP() async {
-    bool isWifiConnected = await checkWifiConnection();
-    isConnectToIP.value = ButtonState.loading;
-    if (isWifiConnected) {
-      String ip = await _getIP();
-      int port = await _getPort();
-      String message = "";
-      await Socket.connect(ip, port).then((Socket sock) {
-        message = "connected";
-        isConnectToIP.value = ButtonState.success;
-      }).catchError((Object e) {
-        message = "Failed";
-        isConnectToIP.value = ButtonState.fail;
-        // print("Unable to connect: $e");
-      });
-      showToast(message, Colors.blue, Colors.white);
-    } else {
-      showToast("Wifi connection failed", Colors.redAccent, Colors.white);
-      isConnectToIP.value = ButtonState.idle;
+    if (isConnectToIP.value != ButtonState.loading) {
+      bool isWifiConnected = await checkWifiConnection();
+      isConnectToIP.value = ButtonState.loading;
+      if (isWifiConnected) {
+        String ip = await _getIP();
+        int port = await _getPort();
+        String message = "";
+        Duration timeout = const Duration(seconds: 5);
+        await Socket.connect(ip, port, timeout: timeout).then((Socket sock) {
+          message = "connected";
+        }).catchError((Object e) {
+          message = "Failed";
+          // print("Unable to connect: $e");
+        });
+
+        isConnectToIP.value =
+            message == "connected" ? ButtonState.success : ButtonState.fail;
+        showToast(message, Colors.blue, Colors.white);
+      } else {
+        Timer(Duration(seconds: 6), () {
+          showToast("Wifi connection failed", Colors.redAccent, Colors.white);
+          isConnectToIP.value = ButtonState.idle;
+        });
+      }
     }
   }
 
   void searchIPs() async {
-    isLoading.value = true;
-    connectedIPs.clear();
-    bool isWifiConnected = await checkWifiConnection();
-    if (isWifiConnected) {
-      final String ip = await Wifi.ip;
-      final String subnet = await _getSubnet(ip);
-      int port = await _getPort();
-      final stream = NetworkAnalyzer.discover2(subnet, port);
-      stream.listen((NetworkAddress addr) {
-        if (addr.exists) {
-          // print('Found device: ${addr.ip}');
-          runZoned(() async {
-            await Socket.connect(addr.ip, port).then((Socket sock) {
-              connectedIPs.add(sock);
-            }).catchError((Object e) {
-              // print("Unable to connect: $e");
+    if (!isLoading.value) {
+      isLoading.value = true;
+      connectedIPs.clear();
+      bool isWifiConnected = await checkWifiConnection();
+      if (isWifiConnected) {
+        final String ip = await Wifi.ip;
+        final String subnet = await _getSubnet(ip);
+        int port = await _getPort();
+        final stream = NetworkAnalyzer.discover2(subnet, port);
+        stream.listen((NetworkAddress addr) {
+          if (addr.exists) {
+            // print('Found device: ${addr.ip}');
+            runZoned(() async {
+              await Socket.connect(addr.ip, port).then((Socket sock) {
+                connectedIPs.add(sock);
+              }).catchError((Object e) {
+                // print("Unable to connect: $e");
+              });
             });
-          });
-        }
-      });
-      Timer(Duration(seconds: 6), () {
-        int numberOfFoundedDevice = connectedIPs.length;
-        showToast(
-            "$numberOfFoundedDevice devices found", Colors.blue, Colors.white);
-      });
-    } else {
-      showToast("Wifi connection failed", Colors.redAccent, Colors.white);
+          }
+        });
+        Timer(Duration(seconds: 6), () {
+          int numberOfFoundedDevice = connectedIPs.length;
+          showToast("$numberOfFoundedDevice devices found", Colors.blue,
+              Colors.white);
+          isLoading.value = false;
+        });
+      } else {
+        showToast("Wifi connection failed", Colors.redAccent, Colors.white);
+        isLoading.value = false;
+      }
+
     }
-    isLoading.value = false;
   }
 
   void sendMessage() {

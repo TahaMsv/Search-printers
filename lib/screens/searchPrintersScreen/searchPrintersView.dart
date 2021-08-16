@@ -22,65 +22,72 @@ class SearchPrintersView extends StatelessWidget {
       appBar: AppBar(
         title: Text("TCP Flutter Demo"),
       ),
+      // resizeToAvoidBottomInset: false,
       backgroundColor: Colors.white,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: InputTextField(
-                      mySearchPrintersController: mySearchPrintersController,
-                      hintText: "IP:",
-                    ),
-                  ),
-                  Expanded(
-                    child: InputTextField(
-                      mySearchPrintersController: mySearchPrintersController,
-                      hintText: "Port:",
-                    ),
-                  ),
-                ],
-              ),
-              MyProgressButton(
-                mySearchPrintersController: mySearchPrintersController,
-                text: "Connect",
-              ),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: MyProgressButton(
-                      mySearchPrintersController: mySearchPrintersController,
-                      text: "Scan",
-                    ),
-                  ),
-                  Expanded(
-                    child: Container(
-                      height: 55,
-                      margin: EdgeInsets.only(left: 10,right: 10,bottom: 5),
-                      child: TextButton(
-                        style: ButtonStyle(
-                          backgroundColor: MaterialStateProperty.all<Color>(
-                              Colors.redAccent),
-                          foregroundColor:
-                              MaterialStateProperty.all<Color>(Colors.white),
+      body: Container(
+        child: Stack(
+          // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SingleChildScrollView(
+              child: Container(
+                child: Column(
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: InputTextField(
+                            mySearchPrintersController: mySearchPrintersController,
+                            hintText: "IP:",
+                          ),
                         ),
-                        onPressed: mySearchPrintersController.showLogDialog,
-                        child: Text('Failed connections'),
-                      ),
+                        Expanded(
+                          child: InputTextField(
+                            mySearchPrintersController: mySearchPrintersController,
+                            hintText: "Port:",
+                          ),
+                        ),
+                      ],
                     ),
-                  )
-                ],
+                    MyProgressButton(
+                      mySearchPrintersController: mySearchPrintersController,
+                      text: "Connect",
+                    ),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Expanded(
+                          child: MyProgressButton(
+                            mySearchPrintersController: mySearchPrintersController,
+                            text: "Scan",
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            height: 55,
+                            margin: EdgeInsets.only(left: 10,right: 10,bottom: 5),
+                            child: TextButton(
+                              style: ButtonStyle(
+                                backgroundColor: MaterialStateProperty.all<Color>(
+                                    Colors.redAccent),
+                                foregroundColor:
+                                MaterialStateProperty.all<Color>(Colors.white),
+                              ),
+                              onPressed: mySearchPrintersController.showLogDialog,
+                              child: Text('Failed connections'),
+                            ),
+                          ),
+                        )
+                      ],
+                    ),
+                    ConnectedIPsList(
+                        mySearchPrintersController: mySearchPrintersController)
+                  ],
+                ),
               ),
-              ConnectedIPsList(
-                  mySearchPrintersController: mySearchPrintersController)
-            ],
-          ),
-          MessageBox(mySearchPrintersController: mySearchPrintersController),
-        ],
+            ),
+            MessageBox(mySearchPrintersController: mySearchPrintersController),
+          ],
+        ),
       ),
     );
   }
@@ -101,27 +108,27 @@ class MyProgressButton extends StatelessWidget {
     return Container(
       margin: EdgeInsets.only(top: 10, bottom: 5),
       child: Obx(
-        () => ProgressButton(
+            () => ProgressButton(
           stateWidgets: {
             ButtonState.idle: Text(
               text,
               style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
             ),
             ButtonState.loading: Text(
               "Loading",
               style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
             ),
             ButtonState.fail: Text(
               "Fail",
               style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
             ),
             ButtonState.success: Text(
               "Success",
               style:
-                  TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+              TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
             )
           },
           stateColors: {
@@ -136,8 +143,8 @@ class MyProgressButton extends StatelessWidget {
           state: text == "Connect"
               ? (mySearchPrintersController.isConnectToIP.value)
               : (mySearchPrintersController.isLoading.value
-                  ? ButtonState.loading
-                  : ButtonState.idle),
+              ? ButtonState.loading
+              : ButtonState.idle),
         ),
       ),
     );
@@ -193,53 +200,53 @@ class ConnectedIPsList extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       child: Obx(
-        () => mySearchPrintersController.isLoading.value
+            () => mySearchPrintersController.isLoading.value
             ? CircularProgressIndicator()
             : Container(
-                margin: EdgeInsets.only(top: 15),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(10),
-                  color: Colors.white,
-                  boxShadow: [
-                    BoxShadow(color: Colors.blue, spreadRadius: 3),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      margin: EdgeInsets.only(top: 15, bottom: 5),
-                      child: Text(
-                        "Connected IPs:",
-                        style: TextStyle(fontSize: 17),
-                      ),
-                    ),
-                    Container(
-                      height: 100,
-                      child: ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        itemCount:
-                            mySearchPrintersController.connectedIPs.length,
-                        shrinkWrap: true,
-                        itemBuilder: (BuildContext context, int index) {
-                          return Container(
-                              padding: EdgeInsets.all(10),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(10),
-                                color: Colors.white,
-                                boxShadow: [
-                                  BoxShadow(
-                                      color: Colors.green, spreadRadius: 3),
-                                ],
-                              ),
-                              child: Text(mySearchPrintersController
-                                  .connectedIPs[index].address
-                                  .toString()));
-                        },
-                      ),
-                    ),
-                  ],
+          margin: EdgeInsets.only(top: 15),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(10),
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(color: Colors.blue, spreadRadius: 3),
+            ],
+          ),
+          child: Column(
+            children: [
+              Container(
+                margin: EdgeInsets.only(top: 15, bottom: 5),
+                child: Text(
+                  "Connected IPs:",
+                  style: TextStyle(fontSize: 17),
                 ),
               ),
+              Container(
+                height: 100,
+                child: ListView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount:
+                  mySearchPrintersController.connectedIPs.length,
+                  shrinkWrap: true,
+                  itemBuilder: (BuildContext context, int index) {
+                    return Container(
+                        padding: EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          color: Colors.white,
+                          boxShadow: [
+                            BoxShadow(
+                                color: Colors.green, spreadRadius: 3),
+                          ],
+                        ),
+                        child: Text(mySearchPrintersController
+                            .connectedIPs[index].address
+                            .toString()));
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
@@ -255,55 +262,52 @@ class MessageBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: <Widget>[
-        Align(
-          alignment: Alignment.bottomLeft,
-          child: Container(
-            padding: EdgeInsets.only(left: 10, bottom: 10, top: 10),
-            height: 60,
-            width: double.infinity,
-            // color: Colors.white,
-            child: Row(
-              children: <Widget>[
-                Expanded(
-                  child: Container(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: Colors.white,
-                      boxShadow: [
-                        BoxShadow(color: Colors.grey, spreadRadius: 3),
-                      ],
-                    ),
-                    child: TextField(
-                      controller: mySearchPrintersController.textController,
-                      keyboardType: TextInputType.multiline,
-                      maxLines: null,
-                      decoration: InputDecoration(
-                          hintText: "Write message...",
-                          hintStyle: TextStyle(color: Colors.black54),
-                          border: InputBorder.none),
-                    ),
-                  ),
+    return Align(
+      alignment: Alignment.bottomLeft,
+      child: Container(
+        color: Colors.white,
+        padding: EdgeInsets.only(left: 10, bottom: 10),
+        height: 60,
+        width: double.infinity,
+        // color: Colors.white,
+        child: Row(
+          children: <Widget>[
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(10),
+                  color: Colors.white,
+                  boxShadow: [
+                    BoxShadow(color: Colors.grey, spreadRadius: 3),
+                  ],
                 ),
-                SizedBox(
-                  width: 15,
+                child: TextField(
+                  controller: mySearchPrintersController.textController,
+                  keyboardType: TextInputType.multiline,
+                  maxLines: null,
+                  decoration: InputDecoration(
+                      hintText: "Write message...",
+                      hintStyle: TextStyle(color: Colors.black54),
+                      border: InputBorder.none),
                 ),
-                FloatingActionButton(
-                  onPressed: mySearchPrintersController.sendMessage,
-                  child: Icon(
-                    Icons.send,
-                    color: Colors.white,
-                    size: 18,
-                  ),
-                  backgroundColor: Colors.blue,
-                  elevation: 0,
-                ),
-              ],
+              ),
             ),
-          ),
+            SizedBox(
+              width: 15,
+            ),
+            FloatingActionButton(
+              onPressed: mySearchPrintersController.sendMessage,
+              child: Icon(
+                Icons.send,
+                color: Colors.white,
+                size: 18,
+              ),
+              backgroundColor: Colors.blue,
+              elevation: 0,
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }
