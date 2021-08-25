@@ -1,4 +1,4 @@
-import 'package:first_project/screens/searchPrintersScreen/searchPrintersModel.dart';
+import '../screens/searchPrintersScreen/searchPrintersModel.dart';
 import 'package:flutter/material.dart';
 
 class MainModel with ChangeNotifier, SearchPrintersModel {

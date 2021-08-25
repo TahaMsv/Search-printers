@@ -1,4 +1,4 @@
-import 'package:first_project/screens/searchPrintersScreen/searchPrintersView.dart';
+import 'screens/searchPrintersScreen/searchPrintersView.dart';
 import 'package:flutter/material.dart';
 
 import '../utility/Constants.dart';

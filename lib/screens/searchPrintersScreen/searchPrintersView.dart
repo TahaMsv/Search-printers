@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'dart:io';
-import 'package:first_project/global/MainModel.dart';
-import 'package:first_project/screens/searchPrintersScreen/searchPrintersController.dart';
+import '../../global/MainModel.dart';
+import '../../screens/searchPrintersScreen/searchPrintersController.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
 
