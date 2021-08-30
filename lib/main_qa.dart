@@ -11,16 +11,16 @@ import '../../utility/Constants.dart';
 
 void main() {
   AppConfig(
-      flavor: Flavor.PRODUCTION,
+      flavor: Flavor.QA,
       baseUrl: Apis.baseUrl,
       lightTheme: MyTheme.light,
       darkTheme: MyTheme.dark);
 
   WidgetsFlutterBinding.ensureInitialized();
   runZonedGuarded(
-      () => runApp(MultiProvider(
-            providers: [ChangeNotifierProvider(create: (_) => MainModel())],
-            child: MyApp(),
-          )),
-      (e, _) => print("root error : $e"));
+          () => runApp(MultiProvider(
+        providers: [ChangeNotifierProvider(create: (_) => MainModel())],
+        child: MyApp(),
+      )),
+          (e, _) => print("root error : $e"));
 }

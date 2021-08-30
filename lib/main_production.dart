@@ -18,9 +18,9 @@ void main() {
 
   WidgetsFlutterBinding.ensureInitialized();
   runZonedGuarded(
-      () => runApp(MultiProvider(
-            providers: [ChangeNotifierProvider(create: (_) => MainModel())],
-            child: MyApp(),
-          )),
-      (e, _) => print("root error : $e"));
+          () => runApp(MultiProvider(
+        providers: [ChangeNotifierProvider(create: (_) => MainModel())],
+        child: MyApp(),
+      )),
+          (e, _) => print("root error : $e"));
 }
